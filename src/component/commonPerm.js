@@ -1,6 +1,7 @@
-export default checkPermission = async()=>{
+
+
+export const checkPermission = async(location)=>{
     const url = new URL("http://localhost:8080/api/v2/auth/checkPerm");
-    const location = useLocation();  // 현재 경로 가져오기
     const accessToken = sessionStorage.getItem("accessToken");
 
     const pageUrl = location.pathname;
@@ -39,3 +40,4 @@ export default checkPermission = async()=>{
         )
     }
 };
+export default checkPermission; // default export
