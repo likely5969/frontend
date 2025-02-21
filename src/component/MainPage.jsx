@@ -8,16 +8,15 @@ import axios from 'axios';
   const[menuApis,setMenuApis] = useState(null);
   const[articles,setArticles] = useState([]);
   const[boardId,setBoardId] = useState(1);
+  
   const navigate = useNavigate();
   const location = useLocation();  // 현재 경로 가져오기
   const accessToken = sessionStorage.getItem("accessToken");
-
   useEffect(()=>{
-
-       fetchPermission();
-    },[location]);
+        fetchPermission();
+    },[location,navigate]);
     const fetchPermission = async () => {
-      const result = await checkPermission(location);
+      const result = await checkPermission(location,navigate);
       if(result)
         {
           setRoleMenuPerm(result.roleMenuPerm);
@@ -25,14 +24,11 @@ import axios from 'axios';
           setMenuApis(result.menuApis);
           getBoardList();
       }
-    
-    
-    
     }
  
     const getBoardList = async ()=>{
       try{
-        let pageNo = 1;
+         let pageNo = 1;
         const response = await axios.get("http://localhost:8080/api/v2/board/list/"+boardId+"/"+pageNo,{
           withCredentials:true,
           headers : {

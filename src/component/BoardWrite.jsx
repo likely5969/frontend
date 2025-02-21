@@ -1,119 +1,75 @@
 import React ,{ useEffect,useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate ,useParams} from 'react-router-dom';
 import axios from 'axios';
+import checkPermission from "./commonPerm.js";
 
  const BoardWrite = () => {
+  const[memberId,setMemberId] = useState("");
+  const[roleMenuPerm,setRoleMenuPerm] = useState(null);
+  const[menuApis,setMenuApis] = useState(null);
+  const[article,setArticle] = useState({title:"",content:"",boardId:""});
   const location = useLocation();
   const navigate = useNavigate();
   const accessToken  = sessionStorage.getItem("accessToken");
-  const[board,setBoard] = useState({title:"",content:""});
-  const[userData,setUserData] = useState({});
-  const[isAdmin,setIsAdmin] = useState(false);
- 
+   const { boardId } = useParams(); // URL 파라미터에서 boardId 가져오기
+
+
  useEffect(()=>{
-        checkPermission(sessionStorage.getItem("memberId"));
-    },[]);
+  fetchPermission();
+},[location]);
+const fetchPermission = async () => {
 
-
-    const checkPermission = async (memberId)=>
+ const result = await checkPermission(location,navigate);
+    if(result)
       {
-          const response =await fetch("http://localhost:8080/api/v2/board/write",{
-              method:'GET',
-              headers: {
-                  'Content-Type' : 'application/json',
-                  'Authorization': `Bearer ${accessToken}`  // Access Token을 Authorization 헤더에 포함
-    
-              },
-           });
-         if(response.ok){
-          const data = await response.json();
-          const isAdmin = data.data.memberRoleList.some((memberRole)=> memberRole.role.roleName ==="ADMIN");
-  
-          setUserData(data.data);
-          setIsAdmin(isAdmin);
-  
-  
-        }
+        setRoleMenuPerm(result.roleMenuPerm);
+        setMemberId(result.memberId);
+        setMenuApis(result.menuApis);
       }
+ }
+  
+ const handleInput = (e) => {
+   e.preventDefault();
+   const {name,value} = e.target;
+   setArticle((prevArticle)=>({
+    ...prevArticle,
+    [name] : value,
+    boardId : boardId,
+   }));
+ }
 
-
-
-
-
-
-  const writeTitle = (e)=>{
-    setBoard({...board,title: e.target.value});
-  }
-
-
-  const writeContent = (e)=>{
-    setBoard({...board,content: e.target.value});
-  }
-  const submitBoard = async (e) =>{
-    e.preventDefault();
-     const requestBoard = {
-      title: board.title,
-      content : board.content,
-    };
-
-    try{
-      const response = await axios.get('http://localhost:8080/api/v2/board/write',{
-        headers : {
-          "Content-Type" : "application/json",
-          "Authorization" : `Bearer ${accessToken}`
-        }
-        
-      });
-      debugger
-    }catch(error){
-      console.log(error)
-    }finally{
-
+const submitForm = async(e)=>{
+ try{
+  e.preventDefault(); // 기본 폼 제출 방지
+   
+  const response = await axios.post("http://localhost:8080/api/v2/board/writeAction",article,{
+    withCredentials:true,
+    headers : {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}` ,// 토큰 포함
     }
+});
+if(response.status == 200){
+  console.log(response.data);
+  if(response.data.data >0){
+    navigate("/main");
   }
-  const goList = ()=>{
-    const boardId= 13;
-    const pageNo = 1;
-    const goUrl = `/board/list/${boardId}/${pageNo}`;  // 상대 경로로 변경
-
-    navigate(goUrl);
-
-
-
+}
+  }catch(error){
+    console.log(error);
   }
+}
+ 
+return (
+  <form id="boardForm">
+  <div>
+    <input type="text" name="title"  onChange={handleInput}/>
+    <textarea id="content" name="content"  onChange={handleInput}/>
+  </div>
+  <button onClick={submitForm}>저장</button>
+  </form>
 
-  return (
-    <div>
-      <h1>글쓰기 페이지</h1>
-      {isAdmin? 
-      <form className="formData" onSubmit={submitBoard}> 
-        <input 
-          type="text"
-          name="title" 
-          id="title"
-           
-          value={board.title}   
-          onChange={writeTitle}     
-        />
-        <textarea 
-          name="content" 
-          id="content"
-          value={board.content}
-          onChange={writeContent}     
-        />
-        {board.title? <button>수정</button>: <button className="submitButton" type="button" onClick={submitBoard}>저장</button>
-        }
-        <button className='list' onClick={goList}>목록</button>
-      </form> 
-      : <p>권한이 없다 </p> }
-
-
-
-
-
-
-    </div>
-    
-  )
- };
- export default BoardWrite;  
+)
+ 
+};
+export default BoardWrite;
