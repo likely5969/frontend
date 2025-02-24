@@ -37,8 +37,21 @@ export const checkPermission = async(location,navigate)=>{
             navigate("/login"); // navigate를 사용하여 로그인 페이지로 이동
             return ;
         }
+        console.log(pageUrl);
+        console.log("권한 ::::::::::::::"+highRoleMenuPerm.memberPermVal);
+        const menuPermObj = {
+            url     : pageUrl,
+            canRead : (highRoleMenuPerm?.memberPermVal & 1) !== 0,  // READ 권한 확인
+            canWrite : (highRoleMenuPerm?.memberPermVal & 2) !== 0, // WRITE 권한 확인
+            canDelete : (highRoleMenuPerm?.memberPermVal & 4) !== 0, // DELETE 권한 확인
+            canManaged : (highRoleMenuPerm?.memberPermVal & 8) !== 0, // 관리 권한 확인
+        }
+
+
+
+
         return (
-            {   roleMenuPerm :  highRoleMenuPerm,
+            {   roleMenuPerm :  menuPermObj,
                 memberId : memberId,
                 menuApis: highRoleMenuPerm.menuApis || []
             }

@@ -61,6 +61,15 @@ if(response.status == 200){
 }
  
 return (
+  <>
+        <span>{memberId || "값을 로딩중..................................... "} 님 안녕하세요</span>
+      <br/>
+      <br/><span> {roleMenuPerm?.url ? roleMenuPerm?.url : "❌"} </span>
+      <br/><span> 읽기권한 {roleMenuPerm?.canRead ? "✅" : "❌"} </span>
+      <br/><span> 쓰기권한 {roleMenuPerm?.canWrite ? "✅" : "❌"} </span>
+      <br/><span> 삭제권한 {roleMenuPerm?.canDelete ? "✅" : "❌"} </span>
+      <br/><span> 관리권한 {roleMenuPerm?.canManaged ? "✅" : "❌"} </span>
+            
   <form id="boardForm">
   <div>
     <input type="text" name="title"  onChange={handleInput}/>
@@ -68,6 +77,7 @@ return (
   </div>
   <button onClick={submitForm}>저장</button>
   </form>
+  </>
 
 )
  
