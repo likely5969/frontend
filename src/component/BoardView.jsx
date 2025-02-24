@@ -2,6 +2,7 @@ import React ,{ useEffect,useState } from 'react';
 import { useLocation, useNavigate ,useParams} from 'react-router-dom';
 import axios from 'axios';
 import checkPermission from "./commonPerm.js";
+import axiosInstance, { setAuthorizationHeader } from './axiosInstance';
 
  const BoardView = () => {
   const[memberId,setMemberId] = useState("");
@@ -26,6 +27,7 @@ const fetchPermission = async () => {
         setRoleMenuPerm(result.roleMenuPerm);
         setMemberId(result.memberId);
         setMenuApis(result.menuApis);
+        setAuthorizationHeader(accessToken);
         boardOne(boardId,articleId );
       }
  }
@@ -96,23 +98,14 @@ const inputChange = (e)=>{
        ...prevArticle, [name]:value,boardId:boardId,id:articleId
   }))
 }
-const goDelete =async (boardId,id,event)=>{
+const goDelete =async (boardId,id)=>{
  
   try{
-    event.preventDefault(); // 기본 폼 제출 방지
-    const response = await axios.post("http://localhost:8080/api/v2/board/delete/"+boardId+"/"+id,{
-      withCredentials:true,
-      headers : {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}` ,// 토큰 포함
-      }
-    });
+    const response = await axiosInstance.delete(`http://localhost:8080/api/v2/board/delete/${boardId}/${id}`); 
     if(response.status == 200){
-
-      if(response.data.data >0){
         navigate("/main");
-      }
     }
+    
   }catch(error){
     console.log(error);
   }
